@@ -289,6 +289,20 @@
     font-family: var(--mono);
     margin-bottom: 10px;
   }
+  /* Chart */
+  .chart-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .chart-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-bottom: 14px; }
+  .chart-legend { display: flex; gap: 16px; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); font-family: var(--mono); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .chart-wrap { position: relative; height: 200px; }
 </style>
 </head>
 <body>
@@ -339,12 +353,22 @@
 
   <!-- HISTORIAL -->
   <div id="history" class="section">
+    <div class="chart-card">
+      <div class="chart-title">Evolución corporal</div>
+      <div class="chart-sub">Peso (kg) · Grasa (%)</div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#7c6cf0"></div>Peso (kg)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#10d97e"></div>Grasa (%)</div>
+      </div>
+      <div class="chart-wrap"><canvas id="progressChart"></canvas></div>
+    </div>
     <div class="section-label">Registros guardados</div>
     <div id="historyList"></div>
   </div>
 
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 const DAYS = [
   {
@@ -510,9 +534,97 @@ function renderLatest() {
     </div>`;
 }
 
+let chartInstance = null;
+
 function renderHistory() {
   const list = getMetrics();
   const c = document.getElementById('historyList');
+
+  // Chart
+  const sorted = [...list].sort((a,b) => a.fecha.localeCompare(b.fecha));
+  const labels = sorted.map(l => {
+    const [y,m,d] = l.fecha.split('-');
+    return `${d}/${m}`;
+  });
+  const pesoData = sorted.map(l => parseFloat(l.peso) || null);
+  const grasaData = sorted.map(l => parseFloat(l.grasa) || null);
+
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+  if (sorted.length >= 1) {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Peso (kg)',
+            data: pesoData,
+            borderColor: '#7c6cf0',
+            backgroundColor: 'rgba(124,108,240,0.08)',
+            borderWidth: 2,
+            pointBackgroundColor: '#7c6cf0',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.3,
+            fill: true,
+            yAxisID: 'yPeso'
+          },
+          {
+            label: 'Grasa (%)',
+            data: grasaData,
+            borderColor: '#10d97e',
+            backgroundColor: 'rgba(16,217,126,0.06)',
+            borderWidth: 2,
+            pointBackgroundColor: '#10d97e',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.3,
+            fill: true,
+            yAxisID: 'yGrasa'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e1e35',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            titleColor: '#9090b0',
+            bodyColor: '#e8e8f0',
+            padding: 10,
+            callbacks: {
+              label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) : '—')
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#5a5a7a', font: { family: "'DM Mono'", size: 10 } }
+          },
+          yPeso: {
+            position: 'left',
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#7c6cf0', font: { family: "'DM Mono'", size: 10 }, callback: v => v + 'kg' }
+          },
+          yGrasa: {
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#10d97e', font: { family: "'DM Mono'", size: 10 }, callback: v => v + '%' }
+          }
+        }
+      }
+    });
+  }
+
+  // List
   if (!list.length) {
     c.innerHTML = '<div class="empty"><span>📊</span>Aún no hay registros.<br>Agrega tu primera medición en la pestaña Métricas.</div>';
     return;
