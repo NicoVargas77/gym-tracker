@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gym Tracker">
+<meta name="theme-color" content="#1a1a2e">
+<title>Gym Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f0f1a;
+    --bg2: #1a1a2e;
+    --bg3: #16213e;
+    --surface: #1e1e35;
+    --surface2: #252540;
+    --accent: #7c6cf0;
+    --accent2: #a78bfa;
+    --accent-dim: rgba(124,108,240,0.15);
+    --green: #10d97e;
+    --green-dim: rgba(16,217,126,0.12);
+    --red: #f04f6f;
+    --red-dim: rgba(240,79,111,0.12);
+    --amber: #f5a623;
+    --amber-dim: rgba(245,166,35,0.12);
+    --text: #e8e8f0;
+    --text2: #9090b0;
+    --text3: #5a5a7a;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --radius: 14px;
+    --radius-sm: 8px;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    max-width: 430px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    padding: 52px 20px 16px;
+    background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .app-name { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+  .app-name span { color: var(--accent2); }
+  .app-sub { font-size: 12px; color: var(--text2); margin-top: 2px; font-family: var(--mono); }
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); position: relative; margin-top: 6px; }
+  .pulse-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 1.5px solid var(--green); opacity: 0.5; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:.5} 50%{transform:scale(1.4);opacity:0} }
+
+  /* Tab nav */
+  .tabs-nav {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 4px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font);
+    text-align: center;
+    color: var(--text2);
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: 0.01em;
+  }
+  .tab-btn.on { background: var(--accent); color: #fff; }
+
+  /* Content */
+  .content { padding: 16px 16px 100px; }
+  .section { display: none; }
+  .section.on { display: block; }
+
+  /* Day pills */
+  .day-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; margin-bottom: 16px; }
+  .day-scroll::-webkit-scrollbar { display: none; }
+  .day-pill {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    background: var(--surface);
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .day-pill.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* Workout card */
+  .workout-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .wk-head {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .wk-name { font-size: 16px; font-weight: 600; }
+  .wk-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--accent-dim);
+    color: var(--accent2);
+    font-family: var(--mono);
+  }
+  .wk-meta {
+    padding: 8px 16px;
+    font-size: 11px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+    font-family: var(--mono);
+  }
+  .wk-warmup {
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+  }
+  .wk-warmup b { color: var(--amber); font-weight: 500; flex-shrink: 0; }
+
+  /* Exercise rows */
+  .ex-row {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    align-items: start;
+  }
+  .ex-row:last-child { border-bottom: none; }
+  .ex-name { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.3; }
+  .ex-equip { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+  .ex-right { text-align: right; }
+  .ex-series { font-size: 13px; font-weight: 600; color: var(--accent2); font-family: var(--mono); white-space: nowrap; }
+  .ex-rest { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+
+  .tip-box {
+    margin: 12px;
+    padding: 10px 12px;
+    background: var(--green-dim);
+    border-radius: var(--radius-sm);
+    border-left: 2px solid var(--green);
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .tip-box b { color: var(--green); font-weight: 500; }
+
+  /* Metrics */
+  .alert-box {
+    padding: 10px 12px;
+    background: var(--amber-dim);
+    border-radius: var(--radius-sm);
+    border-left: 2px solid var(--amber);
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .alert-box b { color: var(--amber); font-weight: 500; }
+
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .sum-card {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+  }
+  .sum-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; font-family: var(--mono); margin-bottom: 4px; }
+  .sum-val { font-size: 20px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+  .sum-unit { font-size: 11px; color: var(--text2); }
+
+  .form-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .form-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.full { grid-column: 1/-1; }
+  .field label { font-size: 11px; color: var(--text2); font-family: var(--mono); }
+  .field input {
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: var(--mono);
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+    -webkit-appearance: none;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--text3); }
+
+  .save-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font);
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: opacity .15s, transform .1s;
+    letter-spacing: 0.01em;
+  }
+  .save-btn:active { opacity: .85; transform: scale(.98); }
+
+  /* History */
+  .hist-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .hist-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hist-date { font-size: 12px; color: var(--text2); font-family: var(--mono); }
+  .hist-weight { font-size: 18px; font-weight: 600; color: var(--accent2); font-family: var(--mono); }
+  .hist-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 16px;
+  }
+  .hstat { font-size: 11px; color: var(--text2); font-family: var(--mono); }
+  .hstat b { color: var(--text); font-weight: 500; }
+
+  .empty { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 13px; line-height: 1.6; }
+  .empty span { display: block; font-size: 32px; margin-bottom: 12px; }
+
+  /* Progress section header */
+  .section-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-family: var(--mono);
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="app-name">Gym<span>Tracker</span></div>
+      <div class="app-sub">Recomposición corporal · 3 meses</div>
+    </div>
+    <div class="pulse-dot"></div>
+  </div>
+  <div class="tabs-nav">
+    <button class="tab-btn on" onclick="showTab('workout',this)">Entrenamiento</button>
+    <button class="tab-btn" onclick="showTab('metrics',this)">Métricas</button>
+    <button class="tab-btn" onclick="showTab('history',this)">Historial</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ENTRENAMIENTO -->
+  <div id="workout" class="section on">
+    <div class="day-scroll" id="dayPills"></div>
+    <div class="workout-card" id="dayContent"></div>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div id="metrics" class="section">
+    <div id="latestSummary"></div>
+    <div class="form-card">
+      <div class="form-title">Registrar medición</div>
+      <div class="form-grid">
+        <div class="field full"><label>Fecha</label><input type="date" id="mDate"></div>
+        <div class="field"><label>Peso (kg)</label><input type="number" id="mPeso" step="0.1" placeholder="82.0"></div>
+        <div class="field"><label>% Grasa corporal</label><input type="number" id="mGrasa" step="0.1" placeholder="26.7"></div>
+        <div class="field"><label>% Músculo</label><input type="number" id="mMusculo" step="0.1" placeholder="69.4"></div>
+        <div class="field"><label>Grasa visceral</label><input type="number" id="mVisceral" step="0.1" placeholder="10"></div>
+        <div class="field"><label>TMB (kcal)</label><input type="number" id="mTmb" step="1" placeholder="1527"></div>
+        <div class="field"><label>% Agua</label><input type="number" id="mAgua" step="0.1" placeholder="52.1"></div>
+        <div class="field"><label>% Músculo esquelético</label><input type="number" id="mEsq" step="0.1" placeholder="41.0"></div>
+        <div class="field"><label>% Proteína</label><input type="number" id="mProt" step="0.1" placeholder="17.3"></div>
+        <div class="field"><label>Masa ósea (kg)</label><input type="number" id="mOsea" step="0.1" placeholder="3.2"></div>
+      </div>
+      <button class="save-btn" onclick="saveMetric()">Guardar medición</button>
+    </div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div id="history" class="section">
+    <div class="section-label">Registros guardados</div>
+    <div id="historyList"></div>
+  </div>
+
+</div>
+
+<script>
+const DAYS = [
+  {
+    label:'Día 1', name:'Pecho + Tríceps', badge:'Lunes',
+    meta:'5 series · 45 min · Empuje horizontal y vertical',
+    warmup:'5 min caminadora + movilidad hombros',
+    exercises:[
+      {name:'Press banca barra olímpica',equip:'Barra olímpica + jaula',series:'4 × 8-10',rest:'2 min'},
+      {name:'Press inclinado Smith',equip:'Barra Smith',series:'3 × 10-12',rest:'90s'},
+      {name:'Aperturas en polea cruzada',equip:'Polea',series:'3 × 12-15',rest:'60s'},
+      {name:'Fondos en jaula o banco',equip:'Jaula / banco',series:'3 × 12',rest:'60s'},
+      {name:'Extensión tríceps en polea',equip:'Polea alta',series:'3 × 12-15',rest:'60s'},
+      {name:'Caminadora inclinada 8-10%, 5.5-6.5 km/h',equip:'Caminadora',series:'10 min',rest:'—'}
+    ],
+    tip:'<b>Progresión:</b> Cuando completes todas las reps limpio, sube 2.5-5kg la siguiente sesión.'
+  },
+  {
+    label:'Día 2', name:'Espalda + Bíceps', badge:'Martes',
+    meta:'5 series · 45 min · Tirón vertical y horizontal',
+    warmup:'5 min caminadora + movilidad escapular',
+    exercises:[
+      {name:'Peso muerto barra olímpica',equip:'Barra olímpica',series:'4 × 6-8',rest:'2 min'},
+      {name:'Jalón en polea al pecho',equip:'Polea alta',series:'3 × 10-12',rest:'90s'},
+      {name:'Remo con barra',equip:'Barra olímpica',series:'3 × 10-12',rest:'90s'},
+      {name:'Remo en polea sentado',equip:'Polea baja',series:'3 × 12',rest:'75s'},
+      {name:'Curl bíceps mancuernas alterno',equip:'Mancuernas',series:'3 × 12-15',rest:'60s'},
+      {name:'Caminadora inclinada',equip:'Caminadora',series:'10 min',rest:'—'}
+    ],
+    tip:'<b>Peso muerto:</b> Prioridad absoluta. Si hay fatiga residual de piernas, baja el peso, no el volumen.'
+  },
+  {
+    label:'Día 3', name:'Piernas + Glúteos', badge:'Miércoles',
+    meta:'5 series · 45 min · Cuádriceps, isquio y glúteo',
+    warmup:'5 min movilidad cadera + activación glúteo',
+    exercises:[
+      {name:'Sentadilla barra olímpica',equip:'Barra olímpica + jaula',series:'4 × 8-10',rest:'2 min'},
+      {name:'Prensa en Smith (pies altos)',equip:'Barra Smith',series:'3 × 12',rest:'90s'},
+      {name:'Hip thrust en Smith',equip:'Barra Smith + banco',series:'4 × 12-15',rest:'90s'},
+      {name:'Extensión cuádriceps en polea',equip:'Polea baja',series:'3 × 15',rest:'60s'},
+      {name:'Curl femoral con mancuerna',equip:'Mancuerna + banco',series:'3 × 12',rest:'60s'}
+    ],
+    tip:'<b>Sin cardio al final</b> — piernas es suficiente estímulo. Descanso activo: movilidad de cadera.'
+  },
+  {
+    label:'Día 4', name:'Hombros + Core', badge:'Jueves',
+    meta:'5 series · 45 min · Empuje vertical + estabilidad',
+    warmup:'5 min movilidad rotadora + face pulls livianos',
+    exercises:[
+      {name:'Press militar barra olímpica',equip:'Barra olímpica',series:'4 × 8-10',rest:'2 min'},
+      {name:'Elevaciones laterales mancuernas',equip:'Mancuernas',series:'3 × 15',rest:'60s'},
+      {name:'Face pull en polea',equip:'Polea alta',series:'3 × 15',rest:'60s'},
+      {name:'Encogimientos con barra',equip:'Barra',series:'3 × 12',rest:'60s'},
+      {name:'Plancha',equip:'—',series:'3 × 45 seg',rest:'45s'},
+      {name:'Crunch en polea o rueda abdominal',equip:'Polea / rueda',series:'3 × 15',rest:'60s'},
+      {name:'Caminadora inclinada',equip:'Caminadora',series:'10 min',rest:'—'}
+    ],
+    tip:'<b>Face pull:</b> Clave para el manguito rotador. No saltes este ejercicio aunque parezca menor.'
+  },
+  {
+    label:'Día 5', name:'Full Body + Cardio', badge:'Sábado',
+    meta:'4 series · 45 min · Integración + quema de grasa',
+    warmup:'5 min caminadora inclinación + movilidad general',
+    exercises:[
+      {name:'Peso muerto convencional',equip:'Barra olímpica',series:'4 × 8',rest:'2 min'},
+      {name:'Press banca con mancuernas',equip:'Mancuernas + banco',series:'3 × 12',rest:'75s'},
+      {name:'Jalón en polea al pecho',equip:'Polea alta',series:'3 × 12',rest:'75s'},
+      {name:'Sentadilla goblet con mancuerna',equip:'Mancuerna',series:'3 × 15',rest:'60s'},
+      {name:'Caminadora inclinada 8-10%, 5.5-6.5 km/h',equip:'Caminadora',series:'20 min',rest:'—'}
+    ],
+    tip:'<b>Cardio para grasa visceral:</b> Caminadora inclinada a velocidad moderada. Quema grasa sin catabolizar músculo.'
+  }
+];
+
+let currentDay = 0;
+
+function renderPills() {
+  document.getElementById('dayPills').innerHTML = DAYS.map((d,i) =>
+    `<div class="day-pill${i===currentDay?' on':''}" onclick="selectDay(${i})">${d.label}</div>`
+  ).join('');
+}
+
+function renderDay() {
+  const d = DAYS[currentDay];
+  document.getElementById('dayContent').innerHTML = `
+    <div class="wk-head">
+      <span class="wk-name">${d.name}</span>
+      <span class="wk-badge">${d.badge}</span>
+    </div>
+    <div class="wk-meta">${d.meta}</div>
+    <div class="wk-warmup"><b>Calentamiento</b> ${d.warmup}</div>
+    ${d.exercises.map(e => `
+      <div class="ex-row">
+        <div>
+          <div class="ex-name">${e.name}</div>
+          <div class="ex-equip">${e.equip}</div>
+        </div>
+        <div class="ex-right">
+          <div class="ex-series">${e.series}</div>
+          <div class="ex-rest">${e.rest}</div>
+        </div>
+      </div>`).join('')}
+    ${d.tip ? `<div class="tip-box">${d.tip}</div>` : ''}
+  `;
+}
+
+function selectDay(i) {
+  currentDay = i;
+  renderPills();
+  renderDay();
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  if (id === 'metrics') renderLatest();
+  if (id === 'history') renderHistory();
+}
+
+function getMetrics() {
+  try { return JSON.parse(localStorage.getItem('gymMetrics') || '[]'); } catch { return []; }
+}
+
+function saveMetric() {
+  const f = {
+    fecha: document.getElementById('mDate').value,
+    peso: document.getElementById('mPeso').value,
+    grasa: document.getElementById('mGrasa').value,
+    musculo: document.getElementById('mMusculo').value,
+    visceral: document.getElementById('mVisceral').value,
+    tmb: document.getElementById('mTmb').value,
+    agua: document.getElementById('mAgua').value,
+    esq: document.getElementById('mEsq').value,
+    prot: document.getElementById('mProt').value,
+    osea: document.getElementById('mOsea').value
+  };
+  if (!f.fecha || !f.peso) { alert('Fecha y peso son obligatorios'); return; }
+  const list = getMetrics();
+  list.unshift(f);
+  localStorage.setItem('gymMetrics', JSON.stringify(list));
+  ['mPeso','mGrasa','mMusculo','mVisceral','mTmb','mAgua','mEsq','mProt','mOsea'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  alert('✓ Medición guardada');
+  renderLatest();
+}
+
+function renderLatest() {
+  const list = getMetrics();
+  const c = document.getElementById('latestSummary');
+  if (!list.length) { c.innerHTML = ''; return; }
+  const l = list[0];
+  const warn = parseFloat(l.visceral || 0) >= 10
+    ? `<div class="alert-box"><b>Grasa visceral ${l.visceral}</b> — zona de atención. Priorizar piernas + caminadora inclinada.</div>`
+    : '';
+  c.innerHTML = `${warn}<div class="section-label" style="margin-bottom:10px">Última medición · ${l.fecha}</div>
+    <div class="summary-grid">
+      <div class="sum-card"><div class="sum-label">Peso</div><div class="sum-val">${l.peso} <span class="sum-unit">kg</span></div></div>
+      <div class="sum-card"><div class="sum-label">Grasa</div><div class="sum-val">${l.grasa} <span class="sum-unit">%</span></div></div>
+      <div class="sum-card"><div class="sum-label">Músculo</div><div class="sum-val">${l.musculo} <span class="sum-unit">%</span></div></div>
+      <div class="sum-card"><div class="sum-label">Visceral</div><div class="sum-val">${l.visceral} <span class="sum-unit">idx</span></div></div>
+    </div>`;
+}
+
+function renderHistory() {
+  const list = getMetrics();
+  const c = document.getElementById('historyList');
+  if (!list.length) {
+    c.innerHTML = '<div class="empty"><span>📊</span>Aún no hay registros.<br>Agrega tu primera medición en la pestaña Métricas.</div>';
+    return;
+  }
+  c.innerHTML = list.map(l => `
+    <div class="hist-card">
+      <div class="hist-head">
+        <span class="hist-date">${l.fecha}</span>
+        <span class="hist-weight">${l.peso} kg</span>
+      </div>
+      <div class="hist-stats">
+        ${l.grasa ? `<span class="hstat">Grasa <b>${l.grasa}%</b></span>` : ''}
+        ${l.musculo ? `<span class="hstat">Músculo <b>${l.musculo}%</b></span>` : ''}
+        ${l.visceral ? `<span class="hstat">Visceral <b>${l.visceral}</b></span>` : ''}
+        ${l.tmb ? `<span class="hstat">TMB <b>${l.tmb}kcal</b></span>` : ''}
+        ${l.agua ? `<span class="hstat">Agua <b>${l.agua}%</b></span>` : ''}
+        ${l.prot ? `<span class="hstat">Proteína <b>${l.prot}%</b></span>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+// Init
+document.getElementById('mDate').value = new Date().toISOString().split('T')[0];
+renderPills();
+renderDay();
+renderLatest();
+</script>
+</body>
+</html>
