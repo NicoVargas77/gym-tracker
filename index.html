@@ -317,18 +317,14 @@
 
   /* ─── DAY PILLS ─── */
   .day-scroll {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
     margin-bottom: 12px;
   }
-  .day-scroll::-webkit-scrollbar { display: none; }
 
   .day-pill {
-    flex-shrink: 0;
-    padding: 7px 14px;
+    padding: 8px 4px;
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
@@ -342,6 +338,7 @@
     letter-spacing: 0.5px;
     text-transform: uppercase;
     position: relative;
+    text-align: center;
   }
 
   .day-pill.on {
@@ -664,14 +661,14 @@
     letter-spacing: 0.5px;
   }
 
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
 
-  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
   .field.full { grid-column: 1/-1; }
   .field label { font-size: 10px; color: var(--text2); font-family: var(--title); letter-spacing: 1px; }
 
   .field input {
-    padding: 9px 12px;
+    padding: 9px 10px;
     font-size: 14px;
     font-family: var(--title);
     background: var(--bg3);
@@ -681,6 +678,8 @@
     outline: none;
     transition: border-color .15s, box-shadow .15s;
     -webkit-appearance: none;
+    width: 100%;
+    min-width: 0;
   }
 
   .field input:focus {
@@ -730,6 +729,21 @@
 
   .hist-date { font-size: 11px; color: var(--text2); font-family: var(--title); letter-spacing: 1px; }
   .hist-weight { font-size: 18px; font-weight: 700; color: var(--blue2); font-family: var(--title); }
+
+  .hist-delete {
+    background: var(--red-dim);
+    border: 1px solid rgba(255,60,110,0.25);
+    color: var(--red);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-family: var(--title);
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all .2s;
+    flex-shrink: 0;
+  }
+  .hist-delete:active { opacity: 0.7; transform: scale(0.95); }
 
   .hist-stats {
     display: flex;
@@ -924,7 +938,7 @@
 const DAYS = [
   {
     label:'Día 1', name:'Pecho + Tríceps', badge:'PUSH',
-    meta:'5 ejercicios · ~45 min · Empuje horizontal y vertical',
+    meta:'6 ejercicios · ~45 min · Empuje horizontal y vertical',
     warmup:'5 min caminadora + movilidad hombros',
     xp: 120,
     exercises:[
@@ -939,7 +953,7 @@ const DAYS = [
   },
   {
     label:'Día 2', name:'Espalda + Bíceps', badge:'PULL',
-    meta:'5 ejercicios · ~45 min · Tirón vertical y horizontal',
+    meta:'6 ejercicios · ~45 min · Tirón vertical y horizontal',
     warmup:'5 min caminadora + movilidad escapular',
     xp: 130,
     exercises:[
@@ -954,7 +968,7 @@ const DAYS = [
   },
   {
     label:'Día 3', name:'Piernas + Glúteos', badge:'LEGS',
-    meta:'5 ejercicios · ~45 min · Cuádriceps, isquio y glúteo',
+    meta:'5 ejercicios · ~50 min · Cuádriceps, isquio y glúteo',
     warmup:'5 min movilidad cadera + activación glúteo',
     xp: 150,
     exercises:[
@@ -967,10 +981,10 @@ const DAYS = [
     tip:'<b>Sin cardio al final</b> — piernas es suficiente estímulo. Descanso activo: movilidad de cadera.'
   },
   {
-    label:'Día 4', name:'Hombros + Core', badge:'OHP',
-    meta:'6 ejercicios · ~45 min · Empuje vertical + estabilidad',
+    label:'Día 4', name:'Hombros + Core + Cardio', badge:'OHP',
+    meta:'7 ejercicios · ~50 min · Empuje vertical + core + quema',
     warmup:'5 min movilidad rotadora + face pulls livianos',
-    xp: 120,
+    xp: 140,
     exercises:[
       {name:'Press militar barra olímpica',equip:'Barra olímpica',series:'4 × 8-10',rest:'2 min'},
       {name:'Elevaciones laterales mancuernas',equip:'Mancuernas',series:'3 × 15',rest:'60s'},
@@ -978,23 +992,9 @@ const DAYS = [
       {name:'Encogimientos con barra',equip:'Barra',series:'3 × 12',rest:'60s'},
       {name:'Plancha',equip:'—',series:'3 × 45 seg',rest:'45s'},
       {name:'Crunch en polea o rueda abdominal',equip:'Polea / rueda',series:'3 × 15',rest:'60s'},
-      {name:'Caminadora inclinada',equip:'Caminadora',series:'10 min',rest:'—'}
+      {name:'Caminadora inclinada 8-10%, 5.5-6.5 km/h',equip:'Caminadora',series:'20 min',rest:'—'}
     ],
-    tip:'<b>Face pull:</b> Clave para el manguito rotador. No saltes este ejercicio aunque parezca menor.'
-  },
-  {
-    label:'Día 5', name:'Full Body + Cardio', badge:'FULL',
-    meta:'4 ejercicios · ~45 min · Integración + quema de grasa',
-    warmup:'5 min caminadora inclinación + movilidad general',
-    xp: 140,
-    exercises:[
-      {name:'Peso muerto convencional',equip:'Barra olímpica',series:'4 × 8',rest:'2 min'},
-      {name:'Press banca con mancuernas',equip:'Mancuernas + banco',series:'3 × 12',rest:'75s'},
-      {name:'Jalón en polea al pecho',equip:'Polea alta',series:'3 × 12',rest:'75s'},
-      {name:'Sentadilla goblet con mancuerna',equip:'Mancuerna',series:'3 × 15',rest:'60s'},
-      {name:'Caminadora inclinada 8-10%',equip:'Caminadora',series:'20 min',rest:'—'}
-    ],
-    tip:'<b>Cardio para grasa visceral:</b> Caminadora inclinada a velocidad moderada. Quema grasa sin catabolizar músculo.'
+    tip:'<b>Face pull + cardio final:</b> Protege el manguito rotador y ataca la grasa visceral. No lo saltes.'
   }
 ];
 
@@ -1467,11 +1467,12 @@ function renderHistory() {
     return;
   }
 
-  c.innerHTML = list.map(l => `
+  c.innerHTML = list.map((l, idx) => `
     <div class="hist-card">
       <div class="hist-head">
         <span class="hist-date">${l.fecha}</span>
         <span class="hist-weight">${l.peso} kg</span>
+        <button class="hist-delete" onclick="deleteMetric(${idx})">✕ BORRAR</button>
       </div>
       <div class="hist-stats">
         ${l.grasa ? `<span class="hstat">Grasa <b>${l.grasa}%</b></span>` : ''}
@@ -1482,6 +1483,16 @@ function renderHistory() {
         ${l.prot ? `<span class="hstat">Proteína <b>${l.prot}%</b></span>` : ''}
       </div>
     </div>`).join('');
+}
+
+// ─── DELETE METRIC ───────────────────────────────────────
+function deleteMetric(idx) {
+  const list = getMetrics();
+  list.splice(idx, 1);
+  localStorage.setItem('gymMetrics', JSON.stringify(list));
+  showToast('Registro eliminado');
+  renderHistory();
+  renderLatest();
 }
 
 // ─── INIT ────────────────────────────────────────────────
